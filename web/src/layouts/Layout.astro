@@ -1,0 +1,96 @@
+---
+export interface Props {
+  title: string;
+  description?: string;
+}
+
+const { 
+  title, 
+  description = "Explore 1980s and early 1990s animated shows and their toy lines. Discover Transformers, G.I. Joe, He-Man, and more classic cartoons with their iconic action figures." 
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    
+    <!-- SEO -->
+    <title>{title}</title>
+    <link rel="canonical" href={canonicalURL} />
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content="ToyToons" />
+    <meta property="og:image" content="/favicon.svg" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content="/favicon.svg" />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#0ea5e9" />
+  </head>
+  <body class="font-body bg-gray-50 antialiased">
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+  }
+  
+  /* Focus styles */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid #0ea5e9;
+    outline-offset: 2px;
+  }
+  
+  /* Selection styles */
+  ::selection {
+    background-color: #0ea5e9;
+    color: white;
+  }
+  
+  /* Scrollbar styles */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+</style>

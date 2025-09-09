@@ -1,0 +1,133 @@
+---
+import type { Listing } from '../lib/loadData';
+
+interface Props {
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+
+// Generate era badge color
+const getEraColor = (era?: string) => {
+  if (!era) return 'bg-gray-100 text-gray-800';
+  if (era.includes('1980s')) return 'bg-blue-100 text-blue-800';
+  if (era.includes('1990s')) return 'bg-purple-100 text-purple-800';
+  return 'bg-gray-100 text-gray-800';
+};
+
+// Generate manufacturer badge color
+const getManufacturerColor = (manufacturer?: string) => {
+  if (!manufacturer) return 'bg-gray-100 text-gray-600';
+  const colors = {
+    'Hasbro': 'bg-red-100 text-red-700',
+    'Mattel': 'bg-pink-100 text-pink-700',
+    'Bandai': 'bg-yellow-100 text-yellow-700',
+    'Kenner': 'bg-green-100 text-green-700',
+    'Playmates': 'bg-indigo-100 text-indigo-700',
+  };
+  return colors[manufacturer as keyof typeof colors] || 'bg-gray-100 text-gray-600';
+};
+
+const itemUrl = `/item/${listing.slug}`;
+---
+
+<div class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden group">
+  <div class="p-6">
+    <!-- Title Section -->
+    <div class="mb-4">
+      <h3 class="text-xl font-bold text-gray-900 group-hover:text-primary-600 transition-colors mb-2">
+        <a href={itemUrl} class="block">
+          {listing.show_title || 'Unknown Show'}
+        </a>
+      </h3>
+      
+      {listing.toyline_name && listing.toyline_name !== listing.show_title && (
+        <p class="text-gray-600 font-medium">
+          Toyline: {listing.toyline_name}
+        </p>
+      )}
+    </div>
+
+    <!-- Badges -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      {listing.era && (
+        <span class={`px-3 py-1 rounded-full text-xs font-medium ${getEraColor(listing.era)}`}>
+          {listing.era}
+        </span>
+      )}
+      
+      {listing.manufacturer && (
+        <span class={`px-3 py-1 rounded-full text-xs font-medium ${getManufacturerColor(listing.manufacturer)}`}>
+          {listing.manufacturer}
+        </span>
+      )}
+    </div>
+
+    <!-- Years -->
+    <div class="text-sm text-gray-600 mb-4 space-y-1">
+      {listing.years_aired && (
+        <div>📺 Aired: {listing.years_aired}</div>
+      )}
+      {listing.years_toyline && listing.years_toyline !== listing.years_aired && (
+        <div>🧸 Toys: {listing.years_toyline}</div>
+      )}
+    </div>
+
+    <!-- Summary Preview -->
+    {listing.description_summary && (
+      <p class="text-gray-700 text-sm leading-relaxed mb-4 line-clamp-3">
+        {listing.description_summary.length > 150 
+          ? listing.description_summary.substring(0, 150) + '...'
+          : listing.description_summary
+        }
+      </p>
+    )}
+
+    <!-- Characters -->
+    {listing.notable_characters.length > 0 && (
+      <div class="mb-4">
+        <div class="text-xs text-gray-500 mb-1">Notable Characters:</div>
+        <div class="flex flex-wrap gap-1">
+          {listing.notable_characters.slice(0, 4).map(character => (
+            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+              {character}
+            </span>
+          ))}
+          {listing.notable_characters.length > 4 && (
+            <span class="text-xs text-gray-500 px-2 py-1">
+              +{listing.notable_characters.length - 4} more
+            </span>
+          )}
+        </div>
+      </div>
+    )}
+
+    <!-- Footer -->
+    <div class="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-gray-100">
+      <div>
+        {listing.country && (
+          <span>📍 {listing.country}</span>
+        )}
+      </div>
+      
+      <a 
+        href={itemUrl}
+        class="text-primary-600 hover:text-primary-700 font-medium inline-flex items-center group-hover:underline"
+      >
+        View Details
+        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

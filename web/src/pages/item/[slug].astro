@@ -1,0 +1,254 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import { loadListings, getListingBySlug } from '../../lib/loadData';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = () => {
+  const listings = loadListings();
+  return listings.map(listing => ({
+    params: { slug: listing.slug },
+    props: { listing }
+  }));
+};
+
+const { listing } = Astro.props;
+
+if (!listing) {
+  return Astro.redirect('/404');
+}
+
+// Generate page metadata
+const title = `${listing.show_title || listing.toyline_name} | ToyToons`;
+const description = listing.description_summary 
+  ? listing.description_summary.substring(0, 150) + '...'
+  : `Learn about ${listing.show_title || listing.toyline_name}, a ${listing.era} animated show and toy line${listing.manufacturer ? ` by ${listing.manufacturer}` : ''}.`;
+
+// Badge colors
+const getEraColor = (era?: string) => {
+  if (!era) return 'bg-gray-100 text-gray-800 border-gray-200';
+  if (era.includes('1980s')) return 'bg-blue-50 text-blue-700 border-blue-200';
+  if (era.includes('1990s')) return 'bg-purple-50 text-purple-700 border-purple-200';
+  return 'bg-gray-50 text-gray-700 border-gray-200';
+};
+
+const getManufacturerColor = (manufacturer?: string) => {
+  if (!manufacturer) return 'bg-gray-50 text-gray-600 border-gray-200';
+  const colors = {
+    'Hasbro': 'bg-red-50 text-red-700 border-red-200',
+    'Mattel': 'bg-pink-50 text-pink-700 border-pink-200',
+    'Bandai': 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    'Kenner': 'bg-green-50 text-green-700 border-green-200',
+    'Playmates': 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  };
+  return colors[manufacturer as keyof typeof colors] || 'bg-gray-50 text-gray-600 border-gray-200';
+};
+---
+
+<Layout title={title} description={description}>
+  <Header />
+  
+  <main class="container mx-auto px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-8">
+      <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <li><a href="/" class="hover:text-primary-600 transition-colors">Home</a></li>
+        <li>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </li>
+        <li class="text-gray-900 font-medium">{listing.show_title || listing.toyline_name}</li>
+      </ol>
+    </nav>
+
+    <div class="grid lg:grid-cols-3 gap-8">
+      <!-- Main Content -->
+      <div class="lg:col-span-2">
+        <!-- Title Section -->
+        <div class="mb-8">
+          <h1 class="text-4xl font-bold text-gray-900 mb-4">
+            {listing.show_title || 'Unknown Show'}
+          </h1>
+          
+          {listing.toyline_name && listing.toyline_name !== listing.show_title && (
+            <p class="text-xl text-gray-600 mb-4">
+              Toy Line: <span class="font-semibold">{listing.toyline_name}</span>
+            </p>
+          )}
+
+          <!-- Badges -->
+          <div class="flex flex-wrap gap-3 mb-6">
+            {listing.era && (
+              <span class={`px-4 py-2 rounded-lg text-sm font-medium border ${getEraColor(listing.era)}`}>
+                📅 {listing.era}
+              </span>
+            )}
+            
+            {listing.manufacturer && (
+              <span class={`px-4 py-2 rounded-lg text-sm font-medium border ${getManufacturerColor(listing.manufacturer)}`}>
+                🏭 {listing.manufacturer}
+              </span>
+            )}
+
+            {listing.country && (
+              <span class="px-4 py-2 rounded-lg text-sm font-medium border bg-green-50 text-green-700 border-green-200">
+                📍 {listing.country}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <!-- Summary -->
+        {listing.description_summary && (
+          <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">About</h2>
+            <p class="text-gray-700 leading-relaxed text-lg">
+              {listing.description_summary}
+            </p>
+          </div>
+        )}
+
+        <!-- Characters -->
+        {listing.notable_characters.length > 0 && (
+          <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Notable Characters</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {listing.notable_characters.map(character => (
+                <div class="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-lg p-3 text-center">
+                  <div class="text-2xl mb-1">🎭</div>
+                  <div class="font-medium text-gray-900">{character}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <!-- Source Link -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">Source</h2>
+          <div class="flex items-start space-x-4">
+            <div class="bg-primary-100 rounded-lg p-3 flex-shrink-0">
+              <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.102m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              {listing.source_title && (
+                <h3 class="font-semibold text-gray-900 mb-1">{listing.source_title}</h3>
+              )}
+              <p class="text-sm text-gray-600 mb-3 break-all">{listing.source_url}</p>
+              <a 
+                href={listing.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium transition-colors"
+              >
+                Visit Source
+                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="lg:col-span-1">
+        <!-- Quick Facts -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">Quick Facts</h3>
+          <dl class="space-y-3">
+            {listing.years_aired && (
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Show Aired</dt>
+                <dd class="text-sm text-gray-900">{listing.years_aired}</dd>
+              </div>
+            )}
+            
+            {listing.years_toyline && (
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Toys Produced</dt>
+                <dd class="text-sm text-gray-900">{listing.years_toyline}</dd>
+              </div>
+            )}
+            
+            {listing.studio_network && (
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Studio/Network</dt>
+                <dd class="text-sm text-gray-900">{listing.studio_network}</dd>
+              </div>
+            )}
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Added</dt>
+              <dd class="text-sm text-gray-900">
+                {new Date(listing.first_seen).toLocaleDateString()}
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- Navigation -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">Explore More</h3>
+          <div class="space-y-3">
+            <a 
+              href={`/?era=${encodeURIComponent(listing.era || '')}`}
+              class="block text-sm text-primary-600 hover:text-primary-700 transition-colors"
+            >
+              More from the {listing.era} →
+            </a>
+            
+            {listing.manufacturer && (
+              <a 
+                href={`/?manufacturer=${encodeURIComponent(listing.manufacturer)}`}
+                class="block text-sm text-primary-600 hover:text-primary-700 transition-colors"
+              >
+                More {listing.manufacturer} toys →
+              </a>
+            )}
+            
+            <a 
+              href="/"
+              class="block text-sm text-primary-600 hover:text-primary-700 transition-colors"
+            >
+              ← Back to all listings
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Debug Info (only visible in development) -->
+    {import.meta.env.DEV && listing.parse_notes.length > 0 && (
+      <div class="mt-12 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+        <h3 class="text-sm font-medium text-yellow-800 mb-2">Debug Info (Development Only)</h3>
+        <ul class="text-xs text-yellow-700 space-y-1">
+          {listing.parse_notes.map(note => (
+            <li>• {note}</li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </main>
+</Layout>
+
+<style>
+  /* Smooth entrance animations */
+  main {
+    animation: fadeIn 0.6s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

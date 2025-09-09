@@ -1,0 +1,165 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Card from '../components/Card.astro';
+import Filters from '../components/Filters';
+import { loadListings, getUniqueEras, getUniqueManufacturers } from '../lib/loadData';
+
+const listings = loadListings();
+const eras = getUniqueEras(listings);
+const manufacturers = getUniqueManufacturers(listings);
+---
+
+<Layout title="ToyToons - 1980s & Early 90s Cartoons + Toys">
+  <Header />
+  
+  <main class="container mx-auto px-4 py-8">
+    <!-- Hero Section -->
+    <section class="text-center mb-12">
+      <h2 class="text-4xl font-bold text-gray-900 mb-4">
+        Explore the Golden Age of <span class="text-primary-600">Cartoons</span> & <span class="text-secondary-600">Toys</span>
+      </h2>
+      <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+        Discover the animated shows and toy lines that defined childhood in the 1980s and early 1990s. 
+        From Transformers to G.I. Joe, explore the stories behind your favorite characters and collectibles.
+      </p>
+      
+      <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-sm p-6 border">
+          <div class="text-3xl mb-2">📺</div>
+          <h3 class="font-semibold text-gray-900 mb-2">Classic Shows</h3>
+          <p class="text-gray-600 text-sm">Animated series that captured imaginations</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm p-6 border">
+          <div class="text-3xl mb-2">🧸</div>
+          <h3 class="font-semibold text-gray-900 mb-2">Iconic Toys</h3>
+          <p class="text-gray-600 text-sm">Action figures and playsets that brought stories to life</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm p-6 border">
+          <div class="text-3xl mb-2">✨</div>
+          <h3 class="font-semibold text-gray-900 mb-2">Nostalgia</h3>
+          <p class="text-gray-600 text-sm">Relive the magic of Saturday morning cartoons</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="mb-8">
+      <div class="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-lg p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+          <div>
+            <div class="text-2xl font-bold text-primary-600">{listings.length}</div>
+            <div class="text-sm text-gray-600">Total Listings</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-secondary-600">{eras.length}</div>
+            <div class="text-sm text-gray-600">Time Periods</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-primary-600">{manufacturers.length}</div>
+            <div class="text-sm text-gray-600">Manufacturers</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters and Search -->
+    <Filters 
+      listings={listings}
+      eras={eras}
+      manufacturers={manufacturers}
+      client:load
+    />
+
+    <!-- Results Grid -->
+    <section>
+      <div id="results-container">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {listings.map(listing => (
+            <Card listing={listing} />
+          ))}
+        </div>
+      </div>
+
+      <!-- No Results Message (hidden by default, shown by JS when needed) -->
+      <div id="no-results" class="hidden text-center py-12">
+        <div class="text-6xl mb-4">😕</div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">No matches found</h3>
+        <p class="text-gray-600 mb-4">Try adjusting your search or filters</p>
+        <button 
+          id="clear-filters-btn"
+          class="text-primary-600 hover:text-primary-700 font-medium underline"
+        >
+          Clear all filters
+        </button>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-16 pt-8 border-t border-gray-200 text-center text-gray-500">
+      <p class="mb-4">
+        Built with ❤️ using <a href="https://astro.build" class="text-primary-600 hover:underline">Astro</a>, 
+        <a href="https://tailwindcss.com" class="text-primary-600 hover:underline">Tailwind CSS</a>, and 
+        <a href="https://netlify.com" class="text-primary-600 hover:underline">Netlify</a>
+      </p>
+      <p class="text-sm">
+        Data scraped respectfully with robots.txt compliance. 
+        <a href="https://github.com/yourusername/toytoons" class="text-primary-600 hover:underline">View source on GitHub</a>
+      </p>
+    </footer>
+  </main>
+</Layout>
+
+<script>
+  // Handle filtering results from React component
+  document.addEventListener('astro:page-load', () => {
+    const resultsContainer = document.getElementById('results-container');
+    const noResultsDiv = document.getElementById('no-results');
+    const clearFiltersBtn = document.getElementById('clear-filters-btn');
+    
+    // Listen for custom filter event
+    document.addEventListener('listings-filtered', ((event: CustomEvent) => {
+      const filteredListings = event.detail;
+      
+      if (filteredListings.length === 0) {
+        resultsContainer?.classList.add('hidden');
+        noResultsDiv?.classList.remove('hidden');
+      } else {
+        resultsContainer?.classList.remove('hidden');
+        noResultsDiv?.classList.add('hidden');
+      }
+    }) as EventListener);
+
+    // Clear filters button
+    clearFiltersBtn?.addEventListener('click', () => {
+      // Dispatch custom event to clear filters
+      document.dispatchEvent(new CustomEvent('clear-all-filters'));
+    });
+  });
+</script>
+
+<style>
+  /* Custom styles for grid animation */
+  .grid > div {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Stagger animation for grid items */
+  .grid > div:nth-child(1) { animation-delay: 0.1s; }
+  .grid > div:nth-child(2) { animation-delay: 0.2s; }
+  .grid > div:nth-child(3) { animation-delay: 0.3s; }
+  .grid > div:nth-child(4) { animation-delay: 0.4s; }
+  .grid > div:nth-child(5) { animation-delay: 0.5s; }
+  .grid > div:nth-child(6) { animation-delay: 0.6s; }
+</style>

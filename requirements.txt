@@ -1,0 +1,11 @@
+httpx>=0.25.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+readability-lxml>=0.8.1
+pydantic>=2.4.0
+python-dotenv>=1.0.0
+typer>=0.9.0
+rich>=13.0.0
+sumy>=0.11.0
+nltk>=3.8.0
+pandas>=2.1.0
