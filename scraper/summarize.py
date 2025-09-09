@@ -75,8 +75,8 @@ Text:
 Summary:"""
         
         try:
-            # Run ollama generate command
-            cmd = ['ollama', 'generate', '-m', self.model_name]
+            # Run ollama run command (updated syntax)
+            cmd = ['ollama', 'run', self.model_name]
             
             result = subprocess.run(
                 cmd,
@@ -110,8 +110,39 @@ Summary:"""
             return None
     
     def _clean_summary(self, summary: str) -> str:
-        """Clean up Ollama output."""
-        # Remove common artifacts
+        """Clean up Ollama output, removing thinking process."""
+        # Remove everything before "...done thinking."
+        if "...done thinking." in summary:
+            summary = summary.split("...done thinking.", 1)[1].strip()
+        
+        # Remove "Thinking..." at the start
+        if summary.startswith("Thinking..."):
+            # Find the actual summary after thinking
+            lines = summary.split('\n')
+            cleaned_lines = []
+            skip_thinking = True
+            
+            for line in lines:
+                line = line.strip()
+                # Skip thinking lines
+                if skip_thinking and (line.startswith('Thinking') or 'thinking' in line.lower() 
+                                    or line.startswith('Okay,') or line.startswith('Let me') 
+                                    or line.startswith('I should') or line.startswith('Wait,')
+                                    or line.startswith('Hmm,') or line.startswith('Maybe')
+                                    or line.startswith('No,') or line.startswith('Yeah,')):
+                    continue
+                
+                # Once we find non-thinking content, stop skipping
+                if line and not any(word in line.lower() for word in ['thinking', 'okay', 'let me', 'wait', 'hmm']):
+                    skip_thinking = False
+                
+                # Add actual summary content
+                if not skip_thinking and line and not line.startswith('Summary:') and not line.startswith('Here'):
+                    cleaned_lines.append(line)
+            
+            return ' '.join(cleaned_lines).strip()
+        
+        # Standard cleaning for non-thinking models
         lines = summary.split('\n')
         cleaned_lines = []
         
@@ -124,13 +155,18 @@ Summary:"""
         return ' '.join(cleaned_lines).strip()
 
 
-class TextRankSummarizer:
+class TextRankSummarizerFallback:
     """Fallback summarizer using TextRank algorithm."""
     
     def __init__(self, language: str = "english"):
         self.language = language
-        self.stemmer = Stemmer(language)
-        self.summarizer = TextRankSummarizer(self.stemmer)
+        try:
+            self.stemmer = Stemmer(language)
+            self.summarizer = TextRankSummarizer(self.stemmer)
+        except (LookupError, KeyError) as e:
+            logger.warning(f"Could not initialize stemmer for {language}, using null stemmer")
+            from sumy.nlp.stemmers import null_stemmer
+            self.summarizer = TextRankSummarizer(null_stemmer)
         
     def summarize(self, text: str, num_sentences: int = 2) -> Optional[str]:
         """Summarize text using TextRank."""
@@ -163,7 +199,7 @@ class SummarizationPipeline:
     
     def __init__(self):
         self.ollama_summarizer = None
-        self.textrank_summarizer = TextRankSummarizer()
+        self.textrank_summarizer = TextRankSummarizerFallback()
         
         # Try to initialize Ollama if configured
         if Config.has_ollama():

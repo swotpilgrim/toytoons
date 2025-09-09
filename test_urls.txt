@@ -1,0 +1,4 @@
+# Test URLs that should allow scraping
+https://example.com
+https://httpbin.org/html
+https://httpbin.org/json

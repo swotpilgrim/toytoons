@@ -13,6 +13,7 @@ from readability import Document
 from .config import Config
 from .models import SourceDoc, Listing
 from .utils import setup_logging, clean_text, extract_characters
+from .images import ImageScraper
 
 logger = setup_logging()
 
@@ -21,6 +22,7 @@ class ContentExtractor:
     """Extract structured content from HTML using various strategies."""
     
     def __init__(self):
+        self.image_scraper = ImageScraper()
         self.era_patterns = [
             (r'198[0-9]', '1980s'),
             (r'199[0-3]', 'early 1990s'),
@@ -137,14 +139,14 @@ class ShowToylineParser:
     def __init__(self):
         self.extractor = ContentExtractor()
     
-    def parse_document(self, doc: SourceDoc) -> List[Listing]:
+    async def parse_document(self, doc: SourceDoc) -> List[Listing]:
         """Parse a source document into listings."""
         try:
             # Extract content
             content = self.extractor.extract_main_content(doc.html, doc.url)
             
             # Create listing
-            listing = self._create_listing(doc, content)
+            listing = await self._create_listing(doc, content)
             
             if listing:
                 return [listing]
@@ -156,7 +158,7 @@ class ShowToylineParser:
             logger.error(f"Error parsing {doc.url}: {e}")
             return []
     
-    def _create_listing(self, doc: SourceDoc, content: Dict[str, Any]) -> Optional[Listing]:
+    async def _create_listing(self, doc: SourceDoc, content: Dict[str, Any]) -> Optional[Listing]:
         """Create a listing from extracted content."""
         parse_notes = []
         
@@ -201,6 +203,33 @@ class ShowToylineParser:
         
         # Only return if we have at least show_title or toyline_name
         if listing.show_title or listing.toyline_name:
+            # Process images
+            try:
+                images = await self.extractor.image_scraper.extract_images_from_html(doc.html, doc.url)
+                
+                if images:
+                    # Get main image
+                    main_images = [img for img in images if img['type'] == 'main']
+                    if main_images:
+                        listing.main_image_url = main_images[0]['url']
+                
+                # Download and process images
+                main_image_local, additional_images = await self.extractor.image_scraper.process_listing_images(
+                    doc.html, doc.url, listing.slug
+                )
+                
+                if main_image_local:
+                    listing.main_image_local = main_image_local
+                    parse_notes.append("Main image downloaded")
+                
+                if additional_images:
+                    listing.additional_images = additional_images
+                    parse_notes.append(f"Downloaded {len(additional_images)} additional images")
+                
+            except Exception as e:
+                logger.warning(f"Failed to process images for {listing.slug}: {e}")
+                parse_notes.append("Image processing failed")
+            
             return listing
         
         parse_notes.append("No show title or toyline name found")

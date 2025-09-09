@@ -50,10 +50,12 @@ class ToytoonsePipeline:
         
         if not docs:
             logger.warning("No documents to process")
+            stats['completed_at'] = datetime.now()
+            stats['duration'] = stats['completed_at'] - stats['started_at']
             return stats
         
         # Step 2: Parse documents into listings
-        listings = self._parse_stage(docs, force_parse)
+        listings = await self._parse_stage(docs, force_parse)
         stats['docs_parsed'] = len(docs)
         stats['listings_created'] = len(listings)
         
@@ -105,7 +107,7 @@ class ToytoonsePipeline:
         logger.info(f"✓ Crawled {len(docs)} documents")
         return docs
     
-    def _parse_stage(self, docs: List[SourceDoc], force: bool) -> List[Listing]:
+    async def _parse_stage(self, docs: List[SourceDoc], force: bool) -> List[Listing]:
         """Parse documents into structured listings."""
         logger.info("🔍 Step 2: Parsing documents")
         
@@ -123,7 +125,7 @@ class ToytoonsePipeline:
             logger.debug(f"Parsing document {i}/{len(docs)}: {doc.url}")
             
             try:
-                doc_listings = self.parser.parse_document(doc)
+                doc_listings = await self.parser.parse_document(doc)
                 all_listings.extend(doc_listings)
                 
             except Exception as e:

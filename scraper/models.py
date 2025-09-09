@@ -55,6 +55,11 @@ class Listing(BaseModel):
     description_summary: Optional[str] = None
     notable_characters: List[str] = Field(default_factory=list)
     
+    # Images
+    main_image_url: Optional[str] = None  # Primary show/poster image
+    main_image_local: Optional[str] = None  # Local path to downloaded image
+    additional_images: List[Dict[str, str]] = Field(default_factory=list)  # [{"url": "...", "local": "...", "description": "..."}]
+    
     # Source tracking
     source_url: str
     source_title: Optional[str] = None

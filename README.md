@@ -42,27 +42,6 @@ If Ollama is not available, the system will automatically fall back to TextRank 
 
 ## 🛠️ Installation
 
-### Option 1: Quick Setup with Makefile (Recommended)
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/toytoons.git
-cd toytoons
-
-# Check system dependencies
-make check-deps
-
-# Set up development environment (Python + Node.js)
-make dev-setup
-
-# Quick start with sample data
-make quick-start
-```
-
-### Option 2: Manual Setup
-
-<details>
-<summary>Click to expand manual installation steps</summary>
 
 #### Windows (PowerShell)
 
@@ -85,26 +64,6 @@ npm install
 cd ..
 ```
 
-#### macOS/Linux
-
-```bash
-# Clone and enter directory
-git clone https://github.com/yourusername/toytoons.git
-cd toytoons
-
-# Create Python virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install Python dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# Install web dependencies
-cd web
-npm install
-cd ..
-```
 
 </details>
 
@@ -405,22 +364,6 @@ jobs:
 
 </details>
 
-## 🛡️ Ethical Scraping
-
-ToyToons follows ethical scraping practices:
-
-### ✅ Respectful Behavior
-- **robots.txt compliance**: Checks and respects robots.txt files
-- **Rate limiting**: Configurable delays between requests (0.8-2.0s default)
-- **Retry logic**: Exponential backoff for failed requests
-- **User-Agent**: Identifies itself clearly as `toytoons-scraper/0.1`
-- **Timeout handling**: Prevents hanging requests (30s timeout)
-
-### 📜 Legal Considerations
-- **Personal/Educational Use**: Designed for learning and personal projects
-- **Attribution**: Maintains source URLs and attribution
-- **Data Licensing**: Check individual site terms before commercial use
-- **Copyright Respect**: Does not scrape copyrighted images or full text
 
 ### 🔧 Customization
 Configure scraping behavior in `.env`:

@@ -1,165 +1,280 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
-import Card from '../components/Card.astro';
-import Filters from '../components/Filters';
-import { loadListings, getUniqueEras, getUniqueManufacturers } from '../lib/loadData';
+import { loadListings, getUniqueEras, getUniqueManufacturers, getUniqueCategories } from '../lib/loadData';
 
 const listings = loadListings();
 const eras = getUniqueEras(listings);
 const manufacturers = getUniqueManufacturers(listings);
+const categories = getUniqueCategories(listings);
 ---
 
 <Layout title="ToyToons - 1980s & Early 90s Cartoons + Toys">
   <Header />
   
-  <main class="container mx-auto px-4 py-8">
-    <!-- Hero Section -->
-    <section class="text-center mb-12">
-      <h2 class="text-4xl font-bold text-gray-900 mb-4">
-        Explore the Golden Age of <span class="text-primary-600">Cartoons</span> & <span class="text-secondary-600">Toys</span>
-      </h2>
-      <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-        Discover the animated shows and toy lines that defined childhood in the 1980s and early 1990s. 
-        From Transformers to G.I. Joe, explore the stories behind your favorite characters and collectibles.
-      </p>
-      
-      <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-        <div class="bg-white rounded-lg shadow-sm p-6 border">
-          <div class="text-3xl mb-2">📺</div>
-          <h3 class="font-semibold text-gray-900 mb-2">Classic Shows</h3>
-          <p class="text-gray-600 text-sm">Animated series that captured imaginations</p>
-        </div>
-        <div class="bg-white rounded-lg shadow-sm p-6 border">
-          <div class="text-3xl mb-2">🧸</div>
-          <h3 class="font-semibold text-gray-900 mb-2">Iconic Toys</h3>
-          <p class="text-gray-600 text-sm">Action figures and playsets that brought stories to life</p>
-        </div>
-        <div class="bg-white rounded-lg shadow-sm p-6 border">
-          <div class="text-3xl mb-2">✨</div>
-          <h3 class="font-semibold text-gray-900 mb-2">Nostalgia</h3>
-          <p class="text-gray-600 text-sm">Relive the magic of Saturday morning cartoons</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Stats -->
-    <section class="mb-8">
-      <div class="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-lg p-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-          <div>
-            <div class="text-2xl font-bold text-primary-600">{listings.length}</div>
-            <div class="text-sm text-gray-600">Total Listings</div>
-          </div>
-          <div>
-            <div class="text-2xl font-bold text-secondary-600">{eras.length}</div>
-            <div class="text-sm text-gray-600">Time Periods</div>
-          </div>
-          <div>
-            <div class="text-2xl font-bold text-primary-600">{manufacturers.length}</div>
-            <div class="text-sm text-gray-600">Manufacturers</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Filters and Search -->
-    <Filters 
-      listings={listings}
-      eras={eras}
-      manufacturers={manufacturers}
-      client:load
-    />
-
-    <!-- Results Grid -->
-    <section>
-      <div id="results-container">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {listings.map(listing => (
-            <Card listing={listing} />
+  <main style="max-width: 1200px; margin: 0 auto; padding: 15px 20px;">
+    
+    <!-- Search and filters row -->
+    <div style="margin-bottom: 20px; padding: 10px; border: 2px solid black; background: #f8f8f8;">
+      <div style="display: flex; gap: 15px; align-items: center;">
+        <input type="text" id="search" placeholder="Search shows..." 
+               style="width: 200px; padding: 4px; border: 1px solid black; font-size: 14px;">
+        
+        <select id="era-filter" style="padding: 4px; border: 1px solid black;">
+          <option value="">All Eras</option>
+          {eras.map(era => (
+            <option value={era}>{era}</option>
           ))}
+        </select>
+        
+        <select id="mfg-filter" style="padding: 4px; border: 1px solid black;">
+          <option value="">All Manufacturers</option>
+          {manufacturers.map(manufacturer => (
+            <option value={manufacturer}>{manufacturer}</option>
+          ))}
+        </select>
+        
+        <select id="category-filter" style="padding: 4px; border: 1px solid black;">
+          <option value="">All Categories</option>
+          {categories.map(category => (
+            <option value={category}>{category.charAt(0).toUpperCase() + category.slice(1)}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+
+    <!-- Grid Listings -->
+    <div id="listings" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;">
+      {listings.map(listing => (
+        <div style="border: 2px solid black; padding: 12px; background: white; height: 220px; display: flex; flex-direction: column;">
+          
+          {listing.main_image_local && (
+            <div style="text-align: center; margin-bottom: 8px;">
+              <img 
+                src={`/${listing.main_image_local}`} 
+                alt={listing.show_title || 'Show image'} 
+                style="width: 60px; height: 60px; object-fit: cover; border: 1px solid black;"
+              />
+            </div>
+          )}
+          
+          <div style="flex: 1; overflow: hidden;">
+            <h4 style="margin: 0 0 6px 0; font-size: 16px; line-height: 1.2;">
+              <a href={`/item/${listing.slug}`} style="color: black; text-decoration: none;">
+                <strong>{listing.show_title || 'Unknown Show'}</strong>
+              </a>
+            </h4>
+          
+            <div style="margin-bottom: 8px;">
+              {listing.era && (
+                <span style="background: #f0f0f0; border: 1px solid black; padding: 1px 4px; margin-right: 4px; font-size: 11px;">
+                  {listing.era}
+                </span>
+              )}
+              {listing.manufacturer && (
+                <span style="background: #f0f0f0; border: 1px solid black; padding: 1px 4px; margin-right: 4px; font-size: 11px;">
+                  {listing.manufacturer}
+                </span>
+              )}
+              {listing.category && (
+                <span style="background: #e8f5e8; border: 1px solid #4caf50; padding: 1px 4px; font-size: 11px; color: #2e7d32;">
+                  {listing.category.charAt(0).toUpperCase() + listing.category.slice(1)}
+                </span>
+              )}
+            </div>
+            
+            {listing.description_summary && (
+              <p style="margin: 0 0 8px 0; line-height: 1.3; font-size: 13px; color: #555; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+                {listing.description_summary.substring(0, 120)}...
+              </p>
+            )}
+          </div>
+          
+          <div style="margin-top: auto;">
+            <a href={`/item/${listing.slug}`} style="font-size: 13px; color: #0000EE;">→ View Details</a>
+          </div>
         </div>
-      </div>
+      ))}
+    </div>
 
-      <!-- No Results Message (hidden by default, shown by JS when needed) -->
-      <div id="no-results" class="hidden text-center py-12">
-        <div class="text-6xl mb-4">😕</div>
-        <h3 class="text-xl font-semibold text-gray-900 mb-2">No matches found</h3>
-        <p class="text-gray-600 mb-4">Try adjusting your search or filters</p>
-        <button 
-          id="clear-filters-btn"
-          class="text-primary-600 hover:text-primary-700 font-medium underline"
-        >
-          Clear all filters
-        </button>
-      </div>
-    </section>
+    <!-- No Results Message (hidden by default, shown by JS when needed) -->
+    <div id="no-results" style="display: none; text-align: center; margin: 40px 0;">
+      <div style="font-size: 48px; margin-bottom: 20px;">😕</div>
+      <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">No matches found</h3>
+      <p style="margin-bottom: 20px;">Try adjusting your search or filters</p>
+      <button 
+        id="clear-filters-btn"
+        style="background: none; border: none; color: #0000EE; text-decoration: underline; cursor: pointer; font-family: Georgia, serif;"
+      >
+        Clear all filters
+      </button>
+    </div>
 
-    <!-- Footer -->
-    <footer class="mt-16 pt-8 border-t border-gray-200 text-center text-gray-500">
-      <p class="mb-4">
-        Built with ❤️ using <a href="https://astro.build" class="text-primary-600 hover:underline">Astro</a>, 
-        <a href="https://tailwindcss.com" class="text-primary-600 hover:underline">Tailwind CSS</a>, and 
-        <a href="https://netlify.com" class="text-primary-600 hover:underline">Netlify</a>
-      </p>
-      <p class="text-sm">
-        Data scraped respectfully with robots.txt compliance. 
-        <a href="https://github.com/yourusername/toytoons" class="text-primary-600 hover:underline">View source on GitHub</a>
+    <hr style="border: none; border-top: 1px solid #ccc; margin: 30px 0 15px 0;">
+    
+    <!-- Compact Footer -->
+    <footer style="text-align: center; font-size: 12px; color: #666;">
+      <p style="margin: 0;">
+        Built with <a href="https://astro.build">Astro</a> • 
+        Data scraped respectfully • 
+        <a href="https://github.com/swotpilgrim/toytoons">Source</a>
       </p>
     </footer>
   </main>
 </Layout>
 
 <script>
-  // Handle filtering results from React component
-  document.addEventListener('astro:page-load', () => {
-    const resultsContainer = document.getElementById('results-container');
+  function initializeFilters() {
+    console.log('Initializing filters...');
+    console.log('Current URL:', window.location.href);
+    console.log('Document ready state:', document.readyState);
+    
+    const searchInput = document.getElementById('search');
+    const eraFilter = document.getElementById('era-filter');  
+    const mfgFilter = document.getElementById('mfg-filter');
+    const categoryFilter = document.getElementById('category-filter');
+    const listingsContainer = document.getElementById('listings');
     const noResultsDiv = document.getElementById('no-results');
     const clearFiltersBtn = document.getElementById('clear-filters-btn');
     
-    // Listen for custom filter event
-    document.addEventListener('listings-filtered', ((event: CustomEvent) => {
-      const filteredListings = event.detail;
-      
-      if (filteredListings.length === 0) {
-        resultsContainer?.classList.add('hidden');
-        noResultsDiv?.classList.remove('hidden');
-      } else {
-        resultsContainer?.classList.remove('hidden');
-        noResultsDiv?.classList.add('hidden');
-      }
-    }) as EventListener);
-
-    // Clear filters button
-    clearFiltersBtn?.addEventListener('click', () => {
-      // Dispatch custom event to clear filters
-      document.dispatchEvent(new CustomEvent('clear-all-filters'));
+    console.log('Elements found:', {
+      searchInput: !!searchInput,
+      eraFilter: !!eraFilter,
+      mfgFilter: !!mfgFilter,
+      categoryFilter: !!categoryFilter,
+      listingsContainer: !!listingsContainer,
+      noResultsDiv: !!noResultsDiv,
+      clearFiltersBtn: !!clearFiltersBtn,
     });
-  });
+    
+    if (!listingsContainer) {
+      console.error('Listings container not found!');
+      return;
+    }
+    
+    // Store original listings
+    const originalListings = Array.from(listingsContainer.children);
+    console.log('Found listings:', originalListings.length);
+    
+    function filterListings() {
+      console.log('Filtering...');
+      const searchTerm = searchInput?.value.toLowerCase() || '';
+      const selectedEra = eraFilter?.value || '';
+      const selectedMfg = mfgFilter?.value || '';
+      const selectedCategory = categoryFilter?.value || '';
+      
+      console.log('Filters:', { searchTerm, selectedEra, selectedMfg, selectedCategory });
+      
+      let visibleCount = 0;
+      
+      originalListings.forEach(listing => {
+        const text = listing.textContent.toLowerCase();
+        const matchesSearch = !searchTerm || text.includes(searchTerm);
+        
+        // Get era, manufacturer, and category from spans
+        const spans = listing.querySelectorAll('span');
+        let listingEra = '';
+        let listingMfg = '';
+        let listingCategory = '';
+        
+        // Parse spans in order: era, manufacturer, category
+        if (spans.length > 0) {
+          const firstSpan = spans[0].textContent.trim();
+          if (firstSpan.includes('1980s') || firstSpan.includes('1990s') || firstSpan.includes('early 1990s')) {
+            listingEra = firstSpan;
+          }
+        }
+        if (spans.length > 1) {
+          const secondSpan = spans[1].textContent.trim();
+          if (secondSpan && secondSpan !== listingEra) {
+            listingMfg = secondSpan;
+          }
+        }
+        if (spans.length > 2) {
+          const thirdSpan = spans[2].textContent.trim();
+          if (thirdSpan && thirdSpan !== listingEra && thirdSpan !== listingMfg) {
+            listingCategory = thirdSpan.toLowerCase();
+          }
+        }
+        
+        const matchesEra = !selectedEra || listingEra === selectedEra;
+        const matchesMfg = !selectedMfg || listingMfg === selectedMfg;
+        const matchesCategory = !selectedCategory || listingCategory === selectedCategory;
+        
+        if (matchesSearch && matchesEra && matchesMfg && matchesCategory) {
+          listing.style.display = 'flex';
+          visibleCount++;
+        } else {
+          listing.style.display = 'none';
+        }
+      });
+      
+      if (noResultsDiv) {
+        if (visibleCount === 0) {
+          noResultsDiv.style.display = 'block';
+        } else {
+          noResultsDiv.style.display = 'none';
+        }
+      }
+      
+      console.log('Visible count:', visibleCount);
+    }
+    
+    // Add event listeners
+    if (searchInput) {
+      searchInput.addEventListener('input', filterListings);
+      console.log('Search input listener added');
+    }
+    if (eraFilter) {
+      eraFilter.addEventListener('change', filterListings);
+      console.log('Era filter listener added');
+    }
+    if (mfgFilter) {
+      mfgFilter.addEventListener('change', filterListings);
+      console.log('Manufacturer filter listener added');
+    }
+    if (categoryFilter) {
+      categoryFilter.addEventListener('change', filterListings);
+      console.log('Category filter listener added');
+    }
+    
+    // Clear filters
+    if (clearFiltersBtn) {
+      clearFiltersBtn.addEventListener('click', () => {
+        console.log('Clear filters clicked');
+        if (searchInput) searchInput.value = '';
+        if (eraFilter) eraFilter.value = '';
+        if (mfgFilter) mfgFilter.value = '';
+        if (categoryFilter) categoryFilter.value = '';
+        filterListings();
+      });
+      console.log('Clear filters listener added');
+    }
+  }
+
+  // Try multiple ways to initialize
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeFilters);
+  } else {
+    initializeFilters();
+  }
+  
+  // Fallback - try again after a short delay
+  setTimeout(initializeFilters, 100);
 </script>
 
 <style>
-  /* Custom styles for grid animation */
-  .grid > div {
-    animation: fadeInUp 0.6s ease-out forwards;
+  /* Simple retro styles */
+  #search:focus {
+    outline: 2px solid #0000EE;
   }
   
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  input[type="checkbox"]:focus {
+    outline: 2px solid #0000EE;
   }
   
-  /* Stagger animation for grid items */
-  .grid > div:nth-child(1) { animation-delay: 0.1s; }
-  .grid > div:nth-child(2) { animation-delay: 0.2s; }
-  .grid > div:nth-child(3) { animation-delay: 0.3s; }
-  .grid > div:nth-child(4) { animation-delay: 0.4s; }
-  .grid > div:nth-child(5) { animation-delay: 0.5s; }
-  .grid > div:nth-child(6) { animation-delay: 0.6s; }
+  /* Hover effects */
+  a:hover {
+    background-color: #ffffcc;
+  }
 </style>

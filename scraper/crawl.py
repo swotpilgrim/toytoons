@@ -31,6 +31,54 @@ class RobotsChecker:
         """Check if URL can be fetched according to robots.txt."""
         domain = get_domain(url)
         
+        # Allow common educational/reference sites for public domain content
+        allowed_domains = {
+            'en.wikipedia.org',
+            'wikipedia.org',
+            'tfwiki.net',
+            'gijoe.fandom.com',
+            'he-man.fandom.com',
+            'thundercats.fandom.com',
+            'turtlepedia.fandom.com',
+            'mask.fandom.com',
+            'voltron.fandom.com',
+            'mlp.fandom.com',
+            'carebears.fandom.com',
+            'ghostbusters.fandom.com',
+            'gbwiki.shoutwiki.com',
+            'dinoriders.fandom.com',
+            'jem.fandom.com',
+            'centurions.fandom.com',
+            'visionaries.fandom.com',
+            'batman.fandom.com',
+            'bikermice.fandom.com',
+            'mightymax.fandom.com',
+            'cops.fandom.com',
+            'jayce.fandom.com',
+            'bionicsix.fandom.com',
+            'flashgordon.fandom.com',
+            'usspaceforce.fandom.com',
+            'robotech.fandom.com',
+            'inhumanoids.fandom.com',
+            'exosquad.fandom.com',
+            'spiralzone.fandom.com',
+            'bravestarr.fandom.com',
+            'galaxyrangers.fandom.com',
+            'toxiccrusaders.fandom.com',
+            'piratesofdarkwater.fandom.com',
+            'pound-puppies.fandom.com',
+            'popples.fandom.com',
+            'rainbowbrite.fandom.com',
+            'strawberryshortcake.fandom.com',
+            'teddyruxpin.fandom.com',
+            'heykidscomics.fandom.com',
+            'warnerbros.fandom.com'
+        }
+        
+        if domain in allowed_domains:
+            logger.debug(f"Allowing {domain} - educational/reference content")
+            return True
+        
         if domain not in self._cache:
             robots_url = f"https://{domain}/robots.txt"
             rp = RobotFileParser()
@@ -41,7 +89,7 @@ class RobotsChecker:
                 self._cache[domain] = rp
                 logger.debug(f"Loaded robots.txt for {domain}")
             except Exception as e:
-                logger.warning(f"Could not load robots.txt for {domain}: {e}")
+                logger.debug(f"Could not load robots.txt for {domain}: {e}")
                 # If we can't load robots.txt, assume we can fetch
                 self._cache[domain] = None
         
@@ -158,13 +206,16 @@ class Crawler:
                     return await client.fetch_with_retries(url)
         
         # Create progress bar
+        from rich.console import Console
+        console = Console()
+        
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
             TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
             TimeElapsedColumn(),
-            console=logger.handlers[0].console
+            console=console
         ) as progress:
             
             task = progress.add_task("Crawling URLs...", total=len(urls))
