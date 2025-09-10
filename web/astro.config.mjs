@@ -14,7 +14,7 @@ export default defineConfig({
   build: {
     format: 'file'
   },
-  site: 'https://toytoons.netlify.app',
-  base: '/',
+  site: 'https://swotpilgrim.github.io',
+  base: '/toytoons',
   trailingSlash: 'ignore'
 });
