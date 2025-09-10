@@ -51,7 +51,7 @@ const categories = getUniqueCategories(listings);
           {listing.main_image_local && (
             <div style="text-align: center; margin-bottom: 8px;">
               <img 
-                src={`/${listing.main_image_local}`} 
+                src={`${import.meta.env.BASE_URL}/${listing.main_image_local}`} 
                 alt={listing.show_title || 'Show image'} 
                 style="width: 60px; height: 60px; object-fit: cover; border: 1px solid black;"
               />
@@ -60,7 +60,7 @@ const categories = getUniqueCategories(listings);
           
           <div style="flex: 1; overflow: hidden;">
             <h4 style="margin: 0 0 6px 0; font-size: 16px; line-height: 1.2;">
-              <a href={`/item/${listing.slug}`} style="color: black; text-decoration: none;">
+              <a href={`${import.meta.env.BASE_URL}/item/${listing.slug}`} style="color: black; text-decoration: none;">
                 <strong>{listing.show_title || 'Unknown Show'}</strong>
               </a>
             </h4>
@@ -91,7 +91,7 @@ const categories = getUniqueCategories(listings);
           </div>
           
           <div style="margin-top: auto;">
-            <a href={`/item/${listing.slug}`} style="font-size: 13px; color: #0000EE;">→ View Details</a>
+            <a href={`${import.meta.env.BASE_URL}/item/${listing.slug}`} style="font-size: 13px; color: #0000EE;">→ View Details</a>
           </div>
         </div>
       ))}

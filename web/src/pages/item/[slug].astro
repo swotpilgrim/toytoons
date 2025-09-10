@@ -31,7 +31,7 @@ const description = listing.description_summary
     
     <!-- Breadcrumb Navigation -->
     <p style="margin-bottom: 20px; font-size: 14px;">
-      <a href="/">← Back to Home</a>
+      <a href={import.meta.env.BASE_URL}>← Back to Home</a>
     </p>
     
     <!-- Main Content Table -->
@@ -83,7 +83,7 @@ const description = listing.description_summary
           <hr style="border: none; border-top: 1px solid black; margin: 15px 0;">
           
           <h3 style="font-size: 16px;">Navigation</h3>
-          <p><a href="/">🏠 Home Page</a></p>
+          <p><a href={import.meta.env.BASE_URL}>🏠 Home Page</a></p>
           <p><a href="/#listings">📺 All Shows</a></p>
           {listing.source_url && (
             <p><a href={listing.source_url} target="_blank">🔗 Original Source</a></p>
@@ -95,7 +95,7 @@ const description = listing.description_summary
           {listing.main_image_local && (
             <div style="text-align: center; margin-bottom: 20px;">
               <img 
-                src={`/${listing.main_image_local}`} 
+                src={`${import.meta.env.BASE_URL}/${listing.main_image_local}`} 
                 alt={listing.show_title || 'Show image'} 
                 style="max-width: 100%; max-height: 300px; border: 1px solid black;"
               />
@@ -136,7 +136,7 @@ const description = listing.description_summary
                 {listing.additional_images.map(image => (
                   <div style="text-align: center;">
                     <img 
-                      src={`/${image.local}`} 
+                      src={`${import.meta.env.BASE_URL}/${image.local}`} 
                       alt={image.description || 'Additional image'} 
                       style="width: 120px; height: 120px; object-fit: cover; border: 1px solid black;"
                     />
@@ -171,7 +171,7 @@ const description = listing.description_summary
     <!-- Bottom Navigation -->
     <center>
       <p style="margin: 20px 0;">
-        <a href="/">« Back to ToyToons Database</a>
+        <a href={import.meta.env.BASE_URL}>« Back to ToyToons Database</a>
       </p>
     </center>
     
